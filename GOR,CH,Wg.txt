@@ -1,0 +1,50 @@
+
+package main
+
+import (
+	"fmt"
+	"sync"
+)
+
+//In this program, we have a `worker` function that
+//receives jobs from a channel,
+// performs some work on each job,
+// and sends the results back to a different channel.
+
+func worker(id int, jobs <-chan int, results chan<- int, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	for j := range jobs { //- The `worker` function receives jobs from the `jobs` channel using a `for...range` loop.
+
+		fmt.Println("worker", id, "started job", j)
+		fmt.Println("worker", id, "finished job", j)
+
+	}
+
+}
+
+func main() {
+
+	
+	numofJobs := 2
+
+	jobs := make(chan int, numofJobs)
+	results := make(chan int, numofJobs)
+
+	var wg sync.WaitGroup
+
+	for w := 1; w <= 2; w++ {
+
+		wg.Add(1)
+		go worker(w, jobs, results, &wg)
+	}
+
+	for j := 1; j <= numofJobs; j++ {
+		jobs <- j
+	}
+
+	close(jobs)
+
+	wg.Wait()
+
+}
